@@ -8,6 +8,21 @@ require __DIR__ . '/../src/Views/render.php';
 $root = dirname(__DIR__);
 $site = $root . '/site';
 
+if (is_dir($site)) {
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($site, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST
+    );
+
+    foreach ($iterator as $item) {
+        if ($item->isDir()) {
+            rmdir($item->getPathname());
+        } else {
+            unlink($item->getPathname());
+        }
+    }
+}
+
 if (! is_dir($site) && ! mkdir($site, 0777, true) && ! is_dir($site)) {
     throw new RuntimeException('Failed to create site directory.');
 }
@@ -21,14 +36,19 @@ $service = new WordpressRegulatoryDisclosureKit\Services\RegulatoryDisclosureKit
 
 $pages = [
     'index.html' => WordpressRegulatoryDisclosureKit\Views\render_overview(),
-    'disclosure-lane.html' => WordpressRegulatoryDisclosureKit\Views\render_disclosure_lane(),
-    'policy-evidence.html' => WordpressRegulatoryDisclosureKit\Views\render_policy_evidence(),
-    'verification.html' => WordpressRegulatoryDisclosureKit\Views\render_verification(),
-    'docs.html' => WordpressRegulatoryDisclosureKit\Views\render_docs(),
+    'disclosure-lane/index.html' => WordpressRegulatoryDisclosureKit\Views\render_disclosure_lane(),
+    'policy-evidence/index.html' => WordpressRegulatoryDisclosureKit\Views\render_policy_evidence(),
+    'verification/index.html' => WordpressRegulatoryDisclosureKit\Views\render_verification(),
+    'docs/index.html' => WordpressRegulatoryDisclosureKit\Views\render_docs(),
 ];
 
 foreach ($pages as $file => $html) {
-    file_put_contents($site . '/' . $file, $html);
+    $target = $site . '/' . $file;
+    $dir = dirname($target);
+    if (! is_dir($dir) && ! mkdir($dir, 0777, true) && ! is_dir($dir)) {
+        throw new RuntimeException('Failed to create page directory: ' . $dir);
+    }
+    file_put_contents($target, $html);
 }
 
 $payloads = [

@@ -38,11 +38,16 @@ jobs:
             {
               echo '<?xml version="1.0" encoding="UTF-8"?>'
               echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-              for f in site/*.html; do
-                n=$(basename "$f")
-                if [ "$n" = "index.html" ]; then loc="https://$DOMAIN/"; else loc="https://$DOMAIN/$n"; fi
+              while IFS= read -r f; do
+                rel=${f#site/}
+                if [ "$rel" = "index.html" ]; then
+                  loc="https://$DOMAIN/"
+                else
+                  clean=${rel%index.html}
+                  loc="https://$DOMAIN/$clean"
+                fi
                 echo "  <url><loc>$loc</loc><lastmod>$TODAY</lastmod></url>"
-              done
+              done < <(find site -name '*.html' | sort)
               echo '</urlset>'
             } > site/sitemap.xml
             node scripts/seo-meta.mjs "$DOMAIN"

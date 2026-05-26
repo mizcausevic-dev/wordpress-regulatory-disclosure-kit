@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 
 const domain = process.argv[2] || "";
 if (!domain || !existsSync("site")) {
@@ -15,8 +16,21 @@ const esc = (value) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-for (const file of readdirSync("site").filter((entry) => entry.endsWith(".html"))) {
-  const path = `site/${file}`;
+function listHtmlFiles(dir) {
+  const entries = [];
+  for (const name of readdirSync(dir)) {
+    const full = join(dir, name);
+    const stat = statSync(full);
+    if (stat.isDirectory()) {
+      entries.push(...listHtmlFiles(full));
+    } else if (name.endsWith(".html")) {
+      entries.push(full);
+    }
+  }
+  return entries;
+}
+
+for (const path of listHtmlFiles("site")) {
   let html = readFileSync(path, "utf8");
   if (html.includes('property="og:title"')) {
     continue;
@@ -24,7 +38,8 @@ for (const file of readdirSync("site").filter((entry) => entry.endsWith(".html")
 
   const match = html.match(/<title>([^<]*)<\/title>/);
   const title = match ? match[1].trim() : domain;
-  const page = file === "index.html" ? "" : file;
+  const rel = relative("site", path).replace(/\\/g, "/");
+  const page = rel === "index.html" ? "" : rel.replace(/index\.html$/, "");
   const url = `https://${domain}/${page}`;
   const tags = [
     `<link rel="canonical" href="${url}">`,
