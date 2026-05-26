@@ -1,0 +1,7 @@
+{
+  "name": "wordpress-regulatory-disclosure-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WordPress disclosure control plane for regulated copy, schema-aligned service disclaimers, approval evidence, and review-safe publication posture.",
+  "license": "AGPL-3.0-or-later"
+}
