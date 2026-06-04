@@ -54,7 +54,7 @@ jobs:
             exit 1
           fi
           echo "DEPLOY_DIR=$DEPLOY_DIR" >> $GITHUB_ENV
-          test -f "$DEPLOY_DIR/index.html" || (echo "FAIL: $DEPLOY_DIR/index.html missing" && exit 1)
+          test -f "$DEPLOY_DIR/index.html" || test -f "$DEPLOY_DIR/index.php" || (echo "FAIL: $DEPLOY_DIR/index.html or index.php missing" && exit 1)
 
       - name: FTP Deploy (attempt 1)
         id: ftp_first
