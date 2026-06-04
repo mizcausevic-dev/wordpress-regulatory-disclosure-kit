@@ -23,22 +23,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          node-version: '22'
+          php-version: '8.2'
+          coverage: none
 
-      - name: Install
-        run: npm ci || npm install
+      - name: Prerender static site/ bundle
+        run: php scripts/prerender.php
 
-      - name: Build
+      - name: Confirm prerender output
         run: |
-          if npm run | grep -q "^  prerender$"; then
-            npm run prerender
-          elif npm run | grep -q "^  build$"; then
-            npm run build
-          else
-            echo "No build/prerender script (likely WordPress/static repo) - using repo root as deploy source"
-          fi
+          test -f site/index.html || (echo "FAIL: prerender did not produce site/index.html" && exit 1)
+          echo "Prerender output:"
+          ls -la site/
 
       - name: Verify build output
         run: |
