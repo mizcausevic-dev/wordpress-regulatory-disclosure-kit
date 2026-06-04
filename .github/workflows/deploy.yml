@@ -34,8 +34,10 @@ jobs:
         run: |
           if npm run | grep -q "^  prerender$"; then
             npm run prerender
-          else
+          elif npm run | grep -q "^  build$"; then
             npm run build
+          else
+            echo "No build/prerender script (likely WordPress/static repo) - using repo root as deploy source"
           fi
 
       - name: Verify build output
